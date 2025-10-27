@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pişt!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="login-screen" class="screen active">
+        <h1 class="title">Pişt!</h1>
+        <p class="subtitle">Bir takma ad seçerek başla</p>
+        <div class="input-group">
+            <input type="text" id="name-input" placeholder="Takma Adın...">
+        </div>
+        <button id="create-room-btn" class="btn btn-primary">Oda Kur</button>
+        <button id="show-join-btn" class="btn btn-secondary">Odaya Katıl</button>
+        <div id="login-error" class="error-message"></div>
+    </div>
+
+    <div id="join-modal" class="modal-container">
+        <div class="modal-content">
+            <h2 class="title">Odaya Katıl</h2>
+            <p class="subtitle">Arkadaşının verdiği oda kodunu gir</p>
+            <div class="input-group">
+                <input type="text" id="room-input" placeholder="Oda Kodu...">
+            </div>
+            <button id="join-room-btn" class="btn btn-primary">Katıl</button>
+            <button id="close-modal-btn" class="btn btn-secondary">Geri</button>
+            <div id="join-error" class="error-message"></div>
+        </div>
+    </div>
+
+    <div id="lobby-screen" class="screen">
+        <p class="subtitle">Oda Kodu:</p>
+        <h2 id="lobby-room-code" class="room-code"></h2>
+        <p class="subtitle">Oyuncular Katılıyor...</p>
+        <div id="lobby-player-list" class="lobby-players"></div>
+        <button id="start-game-btn" class="btn btn-primary host-only">Oyunu Başlat</button>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <div id="player-avatars" class="player-avatar-bar"></div>
+        <div class="game-layout">
+            <div id="task-area" class="task-area"></div>
+            <div class="sidebar">
+                <h3 class="sidebar-title">SKOR TABLOSU</h3>
+                <ul id="scoreboard" class="scoreboard"></ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="end-screen" class="screen">
+        <div class="end-face">
+            <span class="end-eye">X</span>
+            <span class="end-eye">X</span>
+        </div>
+        <div class="end-mouth"></div>
+        <h2 id="end-message" class="end-title"></h2>
+        <p id="end-penalty" class="end-subtitle"></p>
+    </div>
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="client.js" defer></script>
+</body>
+</html>

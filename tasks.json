@@ -1,0 +1,8 @@
+[
+  { "id": 1, "type": "truth", "text": "Bu odadaki birinin en çok kıskandığın özelliği ne?" },
+  { "id": 2, "type": "truth", "text": "Telefonunda en son arattığın 3 şeyi sesli oku." },
+  { "id": 3, "type": "truth", "text": "Hayatının en utanç verici anı neydi?" },
+  { "id": 4, "type": "dare", "text": "Hint aksanıyla 1 dakika boyunca konuş." },
+  { "id": 5, "type": "dare", "text": "Telefonunu yanındaki kişiye ver, 30 saniye boyunca galerinde gezinsin." },
+  { "id": 6, "type": "dare", "text": "Ayakkabılarından birini çıkarıp kokla ve tepkini abartılı bir şekilde göster." }
+]
