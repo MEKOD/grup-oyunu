@@ -27,7 +27,7 @@
             <h2 class="title">Odaya Katıl</h2>
             <p class="subtitle">Arkadaşının verdiği oda kodunu gir</p>
             <div class="input-group">
-                <input type="text" id="room-input" placeholder="Oda Kodu...">
+                <input type="text" id="room-input" placeholder="Oda Kodu..." maxlength="6">
             </div>
             <button id="join-room-btn" class="btn btn-primary">Katıl</button>
             <button id="close-modal-btn" class="btn btn-secondary">Geri</button>
@@ -39,23 +39,31 @@
         <p class="subtitle">Oda Kodu:</p>
         <h2 id="lobby-room-code" class="room-code"></h2>
         <p class="subtitle">Oyuncular:</p>
-        <div id="lobby-player-list" class="lobby-players"></div>
+        <div id="lobby-player-list" class="lobby-players">
+            <span class="waiting-text">İlk oyuncu bekleniyor...</span>
+        </div>
         <button id="start-game-btn" class="btn btn-primary host-only">Oyunu Başlat</button>
     </div>
 
     <div id="game-screen" class="screen">
-        <div id="player-avatars" class="player-avatar-bar"></div>
+        <div id="player-avatars" class="player-avatar-bar">
+            </div>
         <div class="game-layout">
-            <div id="task-area" class="task-area"></div>
+            <div id="task-area" class="task-area">
+                </div>
             <div class="sidebar">
                 <h3 class="sidebar-title">SKOR TABLOSU</h3>
-                <ul id="scoreboard" class="scoreboard"></ul>
+                <ul id="scoreboard" class="scoreboard">
+                    </ul>
             </div>
         </div>
     </div>
 
     <div id="end-screen" class="screen">
-        <div class="end-face"><span class="end-eye">X</span><span class="end-eye">X</span></div>
+        <div class="end-face">
+            <span class="end-eye">X</span>
+            <span class="end-eye">X</span>
+        </div>
         <div class="end-mouth"></div>
         <h2 id="end-message" class="end-title"></h2>
         <p id="end-penalty" class="end-subtitle"></p>

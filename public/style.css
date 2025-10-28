@@ -1,3 +1,4 @@
+/* --- GENEL AYARLAR VE RESET --- */
 :root {
     --background-color: #121212;
     --card-color: #1E1E1E;
@@ -10,46 +11,259 @@
     --font-main: 'Inter', sans-serif;
     --font-title: 'Playfair Display', serif;
 }
-body { background-color: var(--background-color); color: var(--text-color); font-family: var(--font-main); margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; overflow: hidden; }
-.screen { display: none; width: 90%; max-width: 800px; padding: 20px; }
-.screen.active { display: block; animation: fadeIn 0.5s ease-in-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.title { font-family: var(--font-title); color: var(--title-color); font-size: 3rem; margin: 0 0 10px 0; }
-.subtitle { color: #888; margin: 0 0 30px 0; }
-.input-group { margin-bottom: 20px; }
-input[type="text"] { background: none; border: none; border-bottom: 2px solid var(--secondary-color); color: var(--text-color); font-size: 1.5rem; text-align: center; width: 100%; max-width: 300px; padding: 10px 0; outline: none; transition: border-color 0.3s; }
-input[type="text"]:focus { border-bottom-color: var(--primary-color); }
-.btn { border: none; padding: 15px 0; font-size: 1.2rem; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; max-width: 320px; margin-bottom: 10px; transition: all 0.2s ease; }
-.btn-primary { background-color: var(--primary-color); color: #000000; }
-.btn-primary:hover { background-color: #a764fa; transform: translateY(-2px); }
-.btn-secondary { background-color: transparent; border: 2px solid var(--secondary-color); color: var(--text-color); }
-.btn-secondary:hover { background-color: var(--secondary-color); }
-.error-message { color: var(--error-color); height: 20px; margin-top: 10px; font-weight: bold; }
-.modal-container { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); justify-content: center; align-items: center; z-index: 100; }
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: var(--font-main);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    text-align: center;
+    overflow-x: hidden;
+    padding: 1rem;
+}
+
+/* --- EKRAN YÖNETİMİ VE TEMEL ELEMANLAR --- */
+.screen {
+    display: none;
+    width: 100%;
+    max-width: 500px; /* Mobil için maksimum genişlik */
+}
+
+.screen.active {
+    display: block;
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.title {
+    font-family: var(--font-title);
+    color: var(--title-color);
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 1.5rem;
+}
+
+.input-group {
+    margin-bottom: 1rem;
+}
+
+input[type="text"] {
+    background: none;
+    border: none;
+    border-bottom: 2px solid var(--secondary-color);
+    color: var(--text-color);
+    font-size: 1.2rem;
+    text-align: center;
+    width: 100%;
+    padding: 0.75rem 0;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+    border-bottom-color: var(--primary-color);
+}
+
+.btn {
+    border: none;
+    padding: 1rem 0;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    color: #000000;
+}
+.btn-primary:hover:not(:disabled) {
+    background-color: #a764fa;
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    border: 2px solid var(--secondary-color);
+    color: var(--text-color);
+}
+.btn-secondary:hover:not(:disabled) {
+    background-color: var(--secondary-color);
+}
+
+.error-message {
+    color: var(--error-color);
+    height: 20px;
+    margin-top: 0.5rem;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* --- MODAL (POP-UP) STİLLERİ --- */
+.modal-container {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    padding: 1rem;
+}
 .modal-container.active { display: flex; }
-.modal-content { background: var(--card-color); padding: 40px; border-radius: 15px; width: 90%; max-width: 400px; }
-.room-code { font-family: var(--font-main); font-weight: 900; font-size: 3rem; letter-spacing: 5px; color: var(--primary-color); background-color: var(--secondary-color); padding: 10px 20px; border-radius: 10px; display: inline-block; margin-bottom: 30px; }
-.lobby-players { display: flex; justify-content: center; gap: 15px; min-height: 50px; font-size: 2.5rem; margin-bottom: 30px; }
-.player-avatar-bar { display: flex; justify-content: center; gap: 20px; font-size: 2rem; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--secondary-color); }
+.modal-content {
+    background: var(--card-color);
+    padding: 2rem;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+/* --- LOBİ STİLLERİ --- */
+.room-code {
+    font-family: var(--font-main);
+    font-weight: 900;
+    font-size: 2.5rem;
+    letter-spacing: 4px;
+    color: var(--primary-color);
+    background-color: var(--secondary-color);
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+.lobby-players {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    min-height: 50px;
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+.waiting-text {
+    font-size: 1rem;
+    color: #888;
+}
+
+/* --- OYUN EKRANI STİLLERİ --- */
+.player-avatar-bar {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    font-size: 1.8rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--secondary-color);
+    flex-wrap: wrap;
+}
 .player-avatar { transition: transform 0.3s; }
 .player-avatar.active { transform: scale(1.5); text-shadow: 0 0 15px var(--primary-color); }
-.game-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 30px; }
-.task-area { background-color: var(--card-color); border-radius: 15px; padding: 30px; display: flex; flex-direction: column; justify-content: center; }
-.task-card { border: 2px dashed var(--secondary-color); padding: 20px; border-radius: 10px; margin-bottom: 20px; }
-.task-type { font-weight: bold; color: var(--primary-color); letter-spacing: 3px; }
-.task-text { font-size: 1.8rem; font-weight: bold; color: var(--title-color); min-height: 100px; }
-.vote-btn-group { display: flex; gap: 10px; }
+
+.game-layout {
+    display: flex;
+    flex-direction: column; /* MOBİLDE HER ŞEY ALT ALTA */
+    gap: 1.5rem;
+}
+.task-area {
+    background-color: var(--card-color);
+    border-radius: 15px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.task-card {
+    border: 2px dashed var(--secondary-color);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+.task-type {
+    font-weight: bold;
+    color: var(--primary-color);
+    letter-spacing: 3px;
+    font-size: 0.8rem;
+}
+.task-text {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--title-color);
+    min-height: 80px;
+    margin-top: 0.5rem;
+}
+.vote-btn-group { display: flex; flex-direction: column; gap: 0.5rem; }
 .vote-btn-group .btn { font-size: 1rem; }
 .btn-success { background-color: var(--success-color); color: #000; }
 .btn-fail { background-color: var(--error-color); color: #000; }
+
 .sidebar { text-align: left; }
-.sidebar-title { font-family: var(--font-main); font-weight: 900; letter-spacing: 2px; border-bottom: 2px solid var(--secondary-color); padding-bottom: 10px; }
-.scoreboard { list-style: none; padding: 0; }
-.scoreboard li { display: flex; justify-content: space-between; padding: 10px 5px; border-radius: 5px; }
+.sidebar-title {
+    font-family: var(--font-main);
+    font-weight: 900;
+    letter-spacing: 2px;
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.scoreboard { list-style: none; }
+.scoreboard li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0.5rem;
+    border-radius: 5px;
+}
 .scoreboard li:nth-child(odd) { background-color: rgba(255,255,255,0.05); }
 .score { font-weight: bold; color: var(--primary-color); }
-.end-face { font-family: var(--font-title); font-size: 8rem; line-height: 1; color: var(--error-color); }
-.end-eye { margin: 0 20px; }
-.end-mouth { width: 150px; height: 70px; border: 10px solid var(--error-color); border-bottom-left-radius: 80px; border-bottom-right-radius: 80px; border-top: 0; margin: -20px auto 30px auto; }
-.end-title { font-size: 2rem; color: var(--title-color); }
-.end-subtitle { font-size: 1.2rem; color: var(--text-color); }
+
+/* --- OYUN SONU STİLLERİ --- */
+.end-face { font-family: var(--font-title); font-size: 6rem; line-height: 1; color: var(--error-color); }
+.end-eye { margin: 0 1rem; }
+.end-mouth { width: 100px; height: 50px; border: 8px solid var(--error-color); border-bottom-left-radius: 50px; border-bottom-right-radius: 50px; border-top: 0; margin: -15px auto 20px auto; }
+.end-title { font-size: 1.8rem; color: var(--title-color); }
+.end-subtitle { font-size: 1.1rem; color: var(--text-color); }
+
+/* --- TABLET VE DESKTOP İÇİN AYARLAR --- */
+/* min-width: 768px'den büyük ekranlarda bu stiller geçerli olacak */
+@media (min-width: 768px) {
+    .title {
+        font-size: 3rem;
+    }
+    .game-layout {
+        display: grid; /* YERLEŞİMİ GRİD'E ÇEVİR */
+        grid-template-columns: 2fr 1fr; /* Sol taraf daha geniş */
+        gap: 2rem;
+        align-items: start;
+    }
+    .screen {
+        max-width: 800px;
+    }
+}
