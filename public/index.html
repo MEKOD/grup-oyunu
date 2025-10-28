@@ -21,7 +21,6 @@
         <button id="show-join-btn" class="btn btn-secondary">Odaya Katıl</button>
         <div id="login-error" class="error-message"></div>
     </div>
-
     <div id="join-modal" class="modal-container">
         <div class="modal-content">
             <h2 class="title">Odaya Katıl</h2>
@@ -36,9 +35,18 @@
     </div>
 
     <div id="lobby-screen" class="screen">
-        <p class="subtitle">Oda Kodu:</p>
-        <h2 id="lobby-room-code" class="room-code"></h2>
-        <p class="subtitle">Oyuncular Katılıyor...</p>
+        <p class="subtitle">Arkadaşlarını Davet Et!</p>
+        <div class="lobby-invite-area">
+            <div class="qr-code-container">
+                <canvas id="qr-code"></canvas>
+                <p class="qr-text">Kameranı aç, katıl!</p>
+            </div>
+            <div class="link-container">
+                 <input type="text" id="join-link-input" readonly>
+                 <button id="copy-link-btn" class="btn btn-secondary">Linki Kopyala</button>
+            </div>
+        </div>
+        <p class="subtitle">Oyuncular:</p>
         <div id="lobby-player-list" class="lobby-players"></div>
         <button id="start-game-btn" class="btn btn-primary host-only">Oyunu Başlat</button>
     </div>
@@ -53,18 +61,14 @@
             </div>
         </div>
     </div>
-
     <div id="end-screen" class="screen">
-        <div class="end-face">
-            <span class="end-eye">X</span>
-            <span class="end-eye">X</span>
-        </div>
+        <div class="end-face"><span class="end-eye">X</span><span class="end-eye">X</span></div>
         <div class="end-mouth"></div>
         <h2 id="end-message" class="end-title"></h2>
         <p id="end-penalty" class="end-subtitle"></p>
     </div>
 
-
+    <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="client.js" defer></script>
 </body>
