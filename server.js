@@ -1,4 +1,4 @@
-// server.js
+// server.js - "MOLA HAKKI" (GRACE PERIOD) GÜNCELLEMESİ
 
 import express from 'express';
 import http from 'http';
@@ -42,48 +42,32 @@ io.on('connection', (socket) => {
         const player = rooms[roomId].players.find(p => p.token === token);
         if (player) {
             player.id = socket.id;
+            player.status = 'connected'; // Oyuncunun durumunu 'bağlı' olarak güncelle
             socket.join(roomId);
             socket.emit('reconnectSuccess', rooms[roomId]);
-            io.to(roomId).emit('updatePlayerList', rooms[roomId].players);
+            io.to(roomId).emit('updatePlayerList', rooms[roomId].players.filter(p => p.status === 'connected'));
         }
     });
 
     const createAndJoin = (isHost, name, roomId = null) => {
         if (!isHost && !roomId) return;
-
         if (isHost) {
             roomId = crypto.randomBytes(3).toString('hex').toUpperCase();
-            rooms[roomId] = {
-                id: roomId,
-                players: [],
-                hostId: socket.id,
-                gameState: 'lobby',
-                usedTaskIds: [],
-                currentPlayerIndex: 0,
-                round: 0,
-                currentTask: null,
-            };
+            rooms[roomId] = { id: roomId, players: [], hostId: socket.id, gameState: 'lobby', usedTaskIds: [], currentPlayerIndex: 0, round: 0, currentTask: null };
         }
-
         const room = rooms[roomId];
-        if (!room) {
-            return socket.emit('error', { message: 'Oda bulunamadı.' });
-        }
-        if (room.gameState !== 'lobby') {
-            return socket.emit('error', { message: 'Oyun zaten başlamış.' });
-        }
+        if (!room) return socket.emit('error', { message: 'Oda bulunamadı.' });
+        if (room.gameState !== 'lobby') return socket.emit('error', { message: 'Oyun zaten başlamış.' });
         if (room.players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
             return socket.emit('error', { message: `"${name}" adında bir oyuncu zaten odada.` });
         }
-
         const playerToken = crypto.randomBytes(16).toString('hex');
-        const newPlayer = { id: socket.id, name, score: 0, token: playerToken };
+        const newPlayer = { id: socket.id, name, score: 0, token: playerToken, status: 'connected' }; // <-- Yeni 'status' alanı eklendi
         room.players.push(newPlayer);
         socket.join(roomId);
         socket.emit('sessionCreated', { token: playerToken, roomId, players: room.players });
-
         if (!isHost) {
-            io.to(roomId).emit('updatePlayerList', room.players);
+            io.to(roomId).emit('updatePlayerList', room.players.filter(p => p.status === 'connected'));
         }
     };
 
@@ -115,55 +99,68 @@ io.on('connection', (socket) => {
         if (!room || !room.votes || room.votes.find(v => v.voterId === socket.id)) return;
 
         room.votes.push({ voterId: socket.id, vote });
-        const requiredVotes = room.players.length - 1;
+        const activePlayers = room.players.filter(p => p.status === 'connected');
+        const requiredVotes = activePlayers.length - 1;
 
         if (room.votes.length >= requiredVotes) {
             processVotes(roomId);
         }
     });
 
+    // --- DISCONNECT MANTIĞI YENİLENDİ ---
     socket.on('disconnect', () => {
         let roomId = null;
+        let player = null;
         for (const id in rooms) {
-            if (rooms[id].players.some(p => p.id === socket.id)) {
+            const p = rooms[id].players.find(p => p.id === socket.id);
+            if (p) {
                 roomId = id;
+                player = p;
                 break;
             }
         }
 
-        if (!roomId) return;
+        if (!roomId || !player) return;
 
-        const room = rooms[roomId];
-        const playerIndex = room.players.findIndex(p => p.id === socket.id);
-        
-        if (playerIndex !== -1) {
-            const wasHost = room.hostId === socket.id;
-            room.players.splice(playerIndex, 1);
+        player.status = 'disconnected';
+        io.to(roomId).emit('updatePlayerList', rooms[roomId].players.filter(p => p.status === 'connected'));
 
-            if (room.players.length === 0) {
-                delete rooms[roomId];
-                return;
+        setTimeout(() => {
+            if (player.status === 'disconnected') {
+                const room = rooms[roomId];
+                if (!room) return;
+                
+                room.players = room.players.filter(p => p.token !== player.token);
+
+                if (room.players.length === 0) {
+                    delete rooms[roomId];
+                    return;
+                }
+                
+                if (room.hostId === player.id) {
+                    room.hostId = room.players.filter(p => p.status === 'connected')[0].id;
+                }
+                
+                io.to(roomId).emit('updatePlayerList', room.players.filter(p => p.status === 'connected'));
+                
+                const activePlayersCount = room.players.filter(p => p.status === 'connected').length;
+                if (room.gameState === 'in-progress' && activePlayersCount < 2) {
+                    endGame(roomId, "Yeterli oyuncu kalmadı.");
+                }
             }
-
-            if (wasHost) {
-                room.hostId = room.players[0].id;
-            }
-
-            io.to(roomId).emit('updatePlayerList', room.players);
-
-            if (room.gameState === 'in-progress' && room.players.length < 2) {
-                endGame(roomId, "Yeterli oyuncu kalmadı.");
-            }
-        }
+        }, 60000); // 60 Saniye Mola Hakkı
     });
 });
 
 function startTurn(roomId) {
     const room = rooms[roomId];
-    if (!room || room.players.length < 1) return;
+    if (!room) return;
+    
+    const activePlayers = room.players.filter(p => p.status === 'connected');
+    if (activePlayers.length < 1) return;
 
-    room.currentPlayerIndex = room.round % room.players.length;
-    const totalRounds = room.players.length * 5;
+    room.currentPlayerIndex = room.round % activePlayers.length;
+    const totalRounds = activePlayers.length * 5;
 
     if (room.round >= totalRounds) {
         endGame(roomId, "Tüm turlar tamamlandı!");
@@ -171,7 +168,8 @@ function startTurn(roomId) {
     }
 
     room.round++;
-    const currentPlayer = room.players[room.currentPlayerIndex];
+    const currentPlayer = activePlayers[room.currentPlayerIndex];
+    
     let availableTasks = tasks.filter(t => !room.usedTaskIds.includes(t.id));
     if (availableTasks.length === 0) {
         room.usedTaskIds = [];
@@ -192,7 +190,7 @@ function startTurn(roomId) {
 function processVotes(roomId) {
     const room = rooms[roomId];
     if (!room) return;
-    const currentPlayer = room.players[room.currentPlayerIndex];
+    const currentPlayer = room.players.find(p => p.id === room.currentTask.playerId); // Gerçek oyuncuyu bul
     const yapildiVotes = room.votes.filter(v => v.vote === 'yapildi').length;
     const yapilmadiVotes = room.votes.filter(v => v.vote === 'yapilmadi').length;
 
@@ -216,7 +214,8 @@ function endGame(roomId, reason) {
     const room = rooms[roomId];
     if (!room) return;
     room.gameState = 'finished';
-    const sortedPlayers = [...room.players].sort((a, b) => b.score - a.score);
+    const sortedPlayers = [...room.players.filter(p => p.status === 'connected')].sort((a, b) => b.score - a.score);
+    if (sortedPlayers.length === 0) return;
     const lastPlayer = sortedPlayers[sortedPlayers.length - 1];
     const penalties = ["Bir sonraki içecekleri ısmarlar.", "Grubun bir sonraki Instagram hikayesini o paylaşır.", "En sevdiği şarkıyı açıp dans eder."];
     const penalty = penalties[Math.floor(Math.random() * penalties.length)];
