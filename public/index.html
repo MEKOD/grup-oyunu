@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/style.css"> 
 </head>
 <body>
 
@@ -33,7 +33,6 @@
             <div id="join-error" class="error-message"></div>
         </div>
     </div>
-
     <div id="lobby-screen" class="screen">
         <p class="subtitle">Arkadaşlarını Davet Et!</p>
         <div class="lobby-invite-area">
@@ -50,7 +49,6 @@
         <div id="lobby-player-list" class="lobby-players"></div>
         <button id="start-game-btn" class="btn btn-primary host-only">Oyunu Başlat</button>
     </div>
-
     <div id="game-screen" class="screen">
         <div id="player-avatars" class="player-avatar-bar"></div>
         <div class="game-layout">
@@ -68,8 +66,7 @@
         <p id="end-penalty" class="end-subtitle"></p>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrious/dist/qrious.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
-    <script src="client.js" defer></script>
+    <script src="/client.js" defer></script> 
 </body>
 </html>
