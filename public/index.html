@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/style.css"> 
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
@@ -21,6 +21,7 @@
         <button id="show-join-btn" class="btn btn-secondary">Odaya Katıl</button>
         <div id="login-error" class="error-message"></div>
     </div>
+
     <div id="join-modal" class="modal-container">
         <div class="modal-content">
             <h2 class="title">Odaya Katıl</h2>
@@ -33,22 +34,15 @@
             <div id="join-error" class="error-message"></div>
         </div>
     </div>
+
     <div id="lobby-screen" class="screen">
-        <p class="subtitle">Arkadaşlarını Davet Et!</p>
-        <div class="lobby-invite-area">
-            <div class="qr-code-container">
-                <canvas id="qr-code"></canvas>
-                <p class="qr-text">Kameranı aç, katıl!</p>
-            </div>
-            <div class="link-container">
-                 <input type="text" id="join-link-input" readonly>
-                 <button id="copy-link-btn" class="btn btn-secondary">Linki Kopyala</button>
-            </div>
-        </div>
+        <p class="subtitle">Oda Kodu:</p>
+        <h2 id="lobby-room-code" class="room-code"></h2>
         <p class="subtitle">Oyuncular:</p>
         <div id="lobby-player-list" class="lobby-players"></div>
         <button id="start-game-btn" class="btn btn-primary host-only">Oyunu Başlat</button>
     </div>
+
     <div id="game-screen" class="screen">
         <div id="player-avatars" class="player-avatar-bar"></div>
         <div class="game-layout">
@@ -59,6 +53,7 @@
             </div>
         </div>
     </div>
+
     <div id="end-screen" class="screen">
         <div class="end-face"><span class="end-eye">X</span><span class="end-eye">X</span></div>
         <div class="end-mouth"></div>
@@ -67,6 +62,6 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/client.js" defer></script> 
+    <script src="/client.js" defer></script>
 </body>
 </html>
