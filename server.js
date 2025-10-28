@@ -42,7 +42,7 @@ io.on('connection', (socket) => {
         const player = rooms[roomId].players.find(p => p.token === token);
         if (player) {
             player.id = socket.id;
-            player.status = 'connected'; // Oyuncunun durumunu 'bağlı' olarak güncelle
+            player.status = 'connected';
             socket.join(roomId);
             socket.emit('reconnectSuccess', rooms[roomId]);
             io.to(roomId).emit('updatePlayerList', rooms[roomId].players.filter(p => p.status === 'connected'));
@@ -62,7 +62,7 @@ io.on('connection', (socket) => {
             return socket.emit('error', { message: `"${name}" adında bir oyuncu zaten odada.` });
         }
         const playerToken = crypto.randomBytes(16).toString('hex');
-        const newPlayer = { id: socket.id, name, score: 0, token: playerToken, status: 'connected' }; // <-- Yeni 'status' alanı eklendi
+        const newPlayer = { id: socket.id, name, score: 0, token: playerToken, status: 'connected' };
         room.players.push(newPlayer);
         socket.join(roomId);
         socket.emit('sessionCreated', { token: playerToken, roomId, players: room.players });
@@ -107,7 +107,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // --- DISCONNECT MANTIĞI YENİLENDİ ---
     socket.on('disconnect', () => {
         let roomId = null;
         let player = null;
@@ -148,7 +147,7 @@ io.on('connection', (socket) => {
                     endGame(roomId, "Yeterli oyuncu kalmadı.");
                 }
             }
-        }, 60000); // 60 Saniye Mola Hakkı
+        }, 60000);
     });
 });
 
@@ -190,7 +189,10 @@ function startTurn(roomId) {
 function processVotes(roomId) {
     const room = rooms[roomId];
     if (!room) return;
-    const currentPlayer = room.players.find(p => p.id === room.currentTask.playerId); // Gerçek oyuncuyu bul
+    
+    const activePlayers = room.players.filter(p => p.status === 'connected');
+    const currentPlayer = activePlayers[room.currentPlayerIndex];
+    
     const yapildiVotes = room.votes.filter(v => v.vote === 'yapildi').length;
     const yapilmadiVotes = room.votes.filter(v => v.vote === 'yapilmadi').length;
 
