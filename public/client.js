@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const endMessage = document.getElementById('end-message');
     const endPenalty = document.getElementById('end-penalty');
 
-    let gameState = { myId: null, roomId: null, isHost: false, players: [] };
+    let gameState = { myId: null, roomId: null, isHost: false, players: [], hostId: null };
     const playerAvatars = {};
     const EMOJIS = ['🦊', '🐸', '🦄', '🐲', '👽', '🤖', '👑', '😎', '👻', '🐙'];
 
@@ -41,8 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function updatePlayerDisplays(players, currentPlayerId = null) {
-        const hostId = players.length > 0 ? players[0].id : null;
+    function updatePlayerDisplays(players, currentPlayerId = null, hostId = null) {
+        // Host ID'yi güncelle
+        if (hostId) {
+            gameState.hostId = hostId;
+        }
         
         playerAvatarBar.innerHTML = '';
         players.forEach(p => {
@@ -72,8 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
             scoreboard.appendChild(li);
         });
         
-        gameState.isHost = socket.id === hostId;
-        if (startGameBtn) startGameBtn.style.display = gameState.isHost ? 'block' : 'none';
+        // Host kontrolü - socket.id ile karşılaştır
+        gameState.isHost = socket.id === gameState.hostId;
+        console.log('Host kontrolü:', { myId: socket.id, hostId: gameState.hostId, isHost: gameState.isHost });
+        
+        if (startGameBtn) {
+            startGameBtn.style.display = gameState.isHost ? 'block' : 'none';
+        }
     }
 
     if (createRoomBtn) {
@@ -112,12 +120,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (startGameBtn) {
         startGameBtn.addEventListener('click', () => {
+            console.log('Oyun başlatılıyor...');
             socket.emit('startGame', { roomId: gameState.roomId });
         });
     }
 
     socket.on('connect', () => {
         gameState.myId = socket.id;
+        console.log('Bağlantı kuruldu:', socket.id);
         const playerToken = localStorage.getItem('playerToken');
         const roomId = localStorage.getItem('roomId');
         if (playerToken && roomId) {
@@ -126,12 +136,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('sessionCreated', ({ token, roomId, players }) => {
+        console.log('Session oluşturuldu:', { token, roomId, players });
         localStorage.setItem('playerToken', token);
         localStorage.setItem('roomId', roomId);
         gameState.roomId = roomId;
         gameState.players = players;
+        
+        // İlk oyuncu her zaman host'tur
+        gameState.hostId = players[0].id;
+        
         if(lobbyRoomCode) lobbyRoomCode.textContent = roomId;
-        updatePlayerDisplays(players);
+        updatePlayerDisplays(players, null, gameState.hostId);
         showScreen('lobby');
         joinModal.classList.remove('active');
         createRoomBtn.disabled = false;
@@ -139,35 +154,41 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     socket.on('reconnectSuccess', (roomState) => {
+        console.log('Yeniden bağlanıldı:', roomState);
         gameState.roomId = roomState.id;
         gameState.players = roomState.players;
+        gameState.hostId = roomState.hostId;
+        
         if (roomState.gameState === 'lobby') {
             if(lobbyRoomCode) lobbyRoomCode.textContent = roomState.id;
-            updatePlayerDisplays(roomState.players);
+            updatePlayerDisplays(roomState.players, null, roomState.hostId);
             showScreen('lobby');
         } else if (roomState.gameState === 'in-progress') {
-            const currentPlayer = roomState.players[roomState.currentPlayerIndex];
+            const activePlayers = roomState.players.filter(p => p.status === 'connected');
+            const currentPlayer = activePlayers[roomState.currentPlayerIndex];
             handleNewTurn(currentPlayer, roomState.currentTask);
         }
     });
 
     socket.on('updatePlayerList', (players) => {
+        console.log('Oyuncu listesi güncellendi:', players);
         gameState.players = players;
-        updatePlayerDisplays(players);
+        updatePlayerDisplays(players, null, gameState.hostId);
     });
 
     function handleNewTurn(player, task) {
         if (!task || !player) return;
-        updatePlayerDisplays(gameState.players, player.id);
+        console.log('Yeni tur:', { player, task });
+        updatePlayerDisplays(gameState.players, player.id, gameState.hostId);
         let content = `<div class="task-card"><p class="task-type">${task.type.toUpperCase()}</p><p class="task-text">${task.text}</p></div>`;
-        if (player.id === gameState.myId) {
+        if (player.id === socket.id) {
             content += `<button id="pass-task-btn" class="btn btn-secondary">Pas Geç</button>`;
         } else {
             content += `<p class="subtitle">Görevi yapıyor mu?</p><div class="vote-btn-group"><button class="btn btn-success vote-btn" data-vote="yapildi">✅ İkna Oldum</button><button class="btn btn-fail vote-btn" data-vote="yapilmadi">❌ İkna Olmadım</button></div>`;
         }
         taskArea.innerHTML = content;
         showScreen('game');
-        if (player.id === gameState.myId) {
+        if (player.id === socket.id) {
             const passBtn = document.getElementById('pass-task-btn');
             if(passBtn) passBtn.addEventListener('click', () => {
                 passBtn.disabled = true;
@@ -175,6 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         } else {
             document.querySelectorAll('.vote-btn').forEach(btn => btn.addEventListener('click', (e) => {
+                console.log('Oy gönderiliyor:', e.target.dataset.vote);
                 socket.emit('submitVote', { roomId: gameState.roomId, vote: e.target.dataset.vote });
                 const btnGroup = taskArea.querySelector('.vote-btn-group');
                 if(btnGroup) btnGroup.innerHTML = `<p class="subtitle">Oyun alındı, bekleniyor...</p>`;
@@ -185,15 +207,17 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.on('newTurn', ({ player, task }) => handleNewTurn(player, task));
 
     socket.on('turnResult', ({ message, scores }) => {
+        console.log('Tur sonucu:', { message, scores });
         scores.forEach(s => {
            const player = gameState.players.find(p => p.name === s.name);
            if (player) player.score = s.score;
         });
-        updatePlayerDisplays(gameState.players);
+        updatePlayerDisplays(gameState.players, null, gameState.hostId);
         taskArea.innerHTML = `<p class="subtitle">${message}</p>`;
     });
 
     socket.on('gameEnd', ({ scores, lastPlayer }) => {
+        console.log('Oyun bitti:', { scores, lastPlayer });
         endMessage.textContent = `${lastPlayer.name} kaybetti!`;
         endPenalty.textContent = `Şimdi şunu yapmak zorunda: ${lastPlayer.penalty}`;
         localStorage.removeItem('playerToken');
@@ -202,6 +226,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     socket.on('error', ({ message }) => {
+        console.error('Hata:', message);
         const errorEl = joinModal.classList.contains('active') ? joinError : loginError;
         errorEl.textContent = message;
         createRoomBtn.disabled = false;
